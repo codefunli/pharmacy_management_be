@@ -16,6 +16,8 @@ public class Medicine {
 	private String medicineName;
 	// Công ty sản xuất
 	private String medicineCompany;
+	
+	private String category;
 	// Xuất xứ
 	private String origin;
 	// Ngày sản xuất
@@ -108,6 +110,17 @@ public class Medicine {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+	
+	
+
+	@Column(name = "category", nullable = false)
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
 	@Override
