@@ -86,6 +86,11 @@ public class PharmacyStoreController {
 		return response;
 	}
 	
+	@GetMapping("/pharmacies/export")
+	public List<MedicineExport> getAllMedicineExport() {
+		return medicineExportRepository.findAll();
+	}
+	
 	@PostMapping("/pharmacies/export")
 	public List<MedicineExport> exportMidicineById(@Valid @RequestBody MedicineExportRequest medicineExportRequest) throws ResourceNotFoundException {
 		long amount = medicineRepository.getById(medicineExportRequest.getMedicineId()).getAmount();
