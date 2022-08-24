@@ -1,13 +1,18 @@
 package com.nineplus.pharmacy.controller;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,12 +24,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lowagie.text.DocumentException;
 import com.nineplus.pharmacy.exception.ResourceNotFoundException;
 import com.nineplus.pharmacy.model.Medicine;
 import com.nineplus.pharmacy.model.MedicineExport;
 import com.nineplus.pharmacy.model.MedicineExportRequest;
 import com.nineplus.pharmacy.repository.MedicineExportRepository;
 import com.nineplus.pharmacy.repository.MedicineRepository;
+import com.nineplus.pharmacy.services.ExportReportService;
+import com.nineplus.pharmacy.services.MedicinePDFExporter;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -32,9 +40,12 @@ import com.nineplus.pharmacy.repository.MedicineRepository;
 public class PharmacyStoreController {
 	@Autowired
 	private MedicineRepository medicineRepository;
-	
+
 	@Autowired
 	private MedicineExportRepository medicineExportRepository;
+
+	@Autowired
+	private ExportReportService exportReportService;
 
 	@GetMapping("/pharmacies")
 	public List<Medicine> getAllMedicine() {
@@ -64,6 +75,7 @@ public class PharmacyStoreController {
 		medicine.setMedicineName(medicineDetail.getMedicineName());
 		medicine.setMedicineCompany(medicineDetail.getMedicineCompany());
 		medicine.setCategory(medicineDetail.getCategory());
+		medicine.setOrigin(medicineDetail.getOrigin());
 		medicine.setManufactureDate(medicineDetail.getManufactureDate());
 		medicine.setExpireDate(medicineDetail.getExpireDate());
 		medicine.setAmount(medicineDetail.getAmount());
@@ -85,14 +97,15 @@ public class PharmacyStoreController {
 		response.put("deleted", Boolean.TRUE);
 		return response;
 	}
-	
+
 	@GetMapping("/pharmacies/export")
 	public List<MedicineExport> getAllMedicineExport() {
 		return medicineExportRepository.findAll();
 	}
-	
+
 	@PostMapping("/pharmacies/export")
-	public List<MedicineExport> exportMidicineById(@Valid @RequestBody MedicineExportRequest medicineExportRequest) throws ResourceNotFoundException {
+	public List<MedicineExport> exportMidicineById(@Valid @RequestBody MedicineExportRequest medicineExportRequest)
+			throws ResourceNotFoundException {
 		long amount = medicineRepository.getById(medicineExportRequest.getMedicineId()).getAmount();
 		long diff = amount - medicineExportRequest.getAmount();
 		// Save into Medicine Export DB
@@ -104,18 +117,44 @@ public class PharmacyStoreController {
 		medicineExport.setMedicineCompany(medicineCompany);
 		medicineExport.setExportDate(medicineExportRequest.getExportDate());
 		medicineExportRepository.save(medicineExport);
-		
-		//Update medicine DB
+
+		// Update medicine DB
 		Medicine medicine = medicineRepository.getById(medicineExportRequest.getMedicineId());
-		if(diff>0) {
+		if (diff > 0) {
 			medicine.setAmount(diff);
 			medicineRepository.save(medicine);
 		} else {
 			medicineRepository.delete(medicine);
 		}
-		
-		
 		return medicineExportRepository.findAll();
 	}
+
+	@GetMapping("pharmacies/report1")
+	public ResponseEntity<?> export() {
+		try {
+			exportReportService.export();
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (ResourceNotFoundException e) {
+			e.getMessage();
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+	
+	@GetMapping("pharmacies/report")
+    public void exportToPDF(HttpServletResponse response) throws DocumentException, IOException {
+        response.setContentType("application/pdf");
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String currentDateTime = dateFormatter.format(new Date());
+         
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=users_" + currentDateTime + ".pdf";
+        response.setHeader(headerKey, headerValue);
+         
+        List<Medicine> listMedicine = medicineRepository.findAll();
+         
+        MedicinePDFExporter exporter = new MedicinePDFExporter(listMedicine);
+        exporter.export(response);
+         
+    }
 
 }
