@@ -1,6 +1,10 @@
 package com.nineplus.pharmacy.controller;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,8 +16,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -129,16 +137,16 @@ public class PharmacyStoreController {
 		return medicineExportRepository.findAll();
 	}
 
-	@GetMapping("pharmacies/report1")
-	public ResponseEntity<?> export() {
-		try {
-			exportReportService.export();
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (ResourceNotFoundException e) {
-			e.getMessage();
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-	}
+//	@GetMapping("pharmacies/report1")
+//	public ResponseEntity<?> export() {
+//		try {
+//			exportReportService.export();
+//			return new ResponseEntity<>(HttpStatus.OK);
+//		} catch (ResourceNotFoundException e) {
+//			e.getMessage();
+//			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//		}
+//	}
 	
 	@GetMapping("pharmacies/report")
     public void exportToPDF(HttpServletResponse response) throws DocumentException, IOException {
@@ -155,6 +163,43 @@ public class PharmacyStoreController {
         MedicinePDFExporter exporter = new MedicinePDFExporter(listMedicine);
         exporter.export(response);
          
+    }
+	
+	@GetMapping("/pharmacies/download/{month}")
+    public ResponseEntity<Resource> download(@PathVariable(value = "month") String month) throws IOException, ResourceNotFoundException {
+    	File file = null;
+    	int monthRes = Integer.parseInt(month);
+			try {
+				file = exportReportService.export(monthRes);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+
+		if (ObjectUtils.isEmpty(file)) {
+			throw new ResourceNotFoundException("Data not found");
+		}
+		String fileName = file.getName();
+		String fileNm = fileName.replace(fileName.substring(fileName.lastIndexOf("_"), fileName.length()), "_thang_" + month);
+        HttpHeaders header = new HttpHeaders();
+        header.add("File-Name", fileNm);
+        header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName );
+        header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        header.add("Response-Header","content-diposition");
+        header.add("Pragma", "no-cache");
+        header.add("Expires", "0");
+
+        Path path = Paths.get(file.getAbsolutePath());
+        ByteArrayResource resource;
+        try {
+			 resource = new ByteArrayResource(Files.readAllBytes(path));
+		} catch (IOException e) {
+			throw new ResourceNotFoundException("Error!");
+		}
+        return ResponseEntity.ok()
+                .headers(header)
+                .contentLength(file.length())
+                .contentType(MediaType.parseMediaType(Files.probeContentType(path)))
+                .body(resource);      
     }
 
 }

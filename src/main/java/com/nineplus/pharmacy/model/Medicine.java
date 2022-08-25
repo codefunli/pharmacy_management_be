@@ -8,8 +8,36 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.NamedNativeQuery;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.ConstructorResult;
+import javax.persistence.ColumnResult;
+import lombok.Data;
 
 @Entity
+@NamedNativeQuery(
+    name = "getReportData",
+    query = "SELECT m.medicine_name, m.amount total_import, tx.amount total_export, m.amount amount_start_month, (m.amount - tx.amount) amount_end_month "
+    		+ "FROM (SELECT m1.medicine_name, SUM(m1.amount) amount FROM medicine m1 WHERE MONTH(m1.import_date) = :month GROUP BY m1.medicine_name) as m "
+    		+ "JOIN (SELECT m3.medicine_name, SUM(m3.amount) amount FROM medicine_export m3 WHERE MONTH(m3.export_date) = :month GROUP BY m3.medicine_name) as tx ON m.medicine_name = tx.medicine_name",
+    resultSetMapping = "ReportInput"
+)
+@SqlResultSetMapping(
+    name = "ReportInput",
+    classes = @ConstructorResult(
+        targetClass = ReportInput.class,
+        columns = {
+            @ColumnResult(name = "medicine_name", type = String.class),
+            @ColumnResult(name = "total_import", type = Long.class),
+            @ColumnResult(name = "total_export", type = Long.class),
+            @ColumnResult(name = "amount_start_month", type = Long.class),
+            @ColumnResult(name = "amount_end_month", type = Long.class)
+        }
+    )
+)
+
+@Data
+
 @Table(name = "medicine")
 public class Medicine {
 	private long id;
@@ -26,6 +54,7 @@ public class Medicine {
 	private long amount;
 	private String unit;
 	private String status;
+	private Date importDate;
 
 	public Medicine() {
 		
@@ -121,6 +150,15 @@ public class Medicine {
 
 	public void setCategory(String category) {
 		this.category = category;
+	}
+	
+	@Column(name = "import_date", nullable = false)
+	public Date getImportDate() {
+		return importDate;
+	}
+
+	public void setImportDate(Date importDate) {
+		this.importDate = importDate;
 	}
 
 	@Override

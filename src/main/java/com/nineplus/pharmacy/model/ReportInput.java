@@ -2,16 +2,16 @@ package com.nineplus.pharmacy.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReportInput {
-	private Long id;
 	private String medicineName;
-	// tồn đầu kỳ 
-	private Long inStock;
-	private Long importQuantity;
-	private Long exportQuantity;
-	private Long currentQuantity;
+	private Long totalImport;
+	private Long totalExport;
+	private Long amountStartMonth;
+	private Long amountEndMonth;
 	
 }

@@ -1,11 +1,12 @@
 package com.nineplus.pharmacy.services;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gembox.spreadsheet.ExcelFile;
@@ -18,18 +19,18 @@ import com.nineplus.pharmacy.model.ReportInput;
 
 @Service
 public class ExportReportService {
-	private static List<ReportInput> data = new ArrayList<>();
-	static {
-		data.add(new ReportInput((Long)1L, "Panadol", (Long)123L, (Long)25L, (Long)43L, (Long)234L));
-		data.add(new ReportInput((Long)2L, "Astra", (Long)235L, (Long)65L, (Long)56L, (Long)784L));
-		data.add(new ReportInput((Long)3L, "Modena", (Long)456L, (Long)72L, (Long)75L, (Long)354L));
-		data.add(new ReportInput((Long)4L, "Flu", (Long)258L, (Long)92L, (Long)82L, (Long)124L));
-		data.add(new ReportInput((Long)5L, "Dierhea", (Long)157L, (Long)45L, (Long)29L, (Long)167L));
-	}
 	
-	public void export() throws ResourceNotFoundException {
+	@Autowired
+	MedicineService medicineSerivice;
+	
+	private static final String EXTENSION = ".xlsx";	
+	
+	public File export(int month) throws ResourceNotFoundException, IOException {
 		SpreadsheetInfo.setLicense("FREE-LIMITED-KEY");
 		ExcelFile workbook;
+		
+		List<ReportInput> data = medicineSerivice.getReportData(month);
+		
 		try {
 			workbook = ExcelFile.load("src\\main\\resources\\IC-Medical-Invoice-Template-10541.xlsx");
 		} catch (IOException e) {
@@ -59,21 +60,20 @@ public class ExportReportService {
         	for (int i = 10; i < data.size() + 10; i++) {
                 ExcelRow currentRow = worksheet.getRow( i);
                 for(int j = i- 10; j < data.size();) {
-                	currentRow.getCell(3).setValue(data.get(j).getId());
+                	currentRow.getCell(3).setValue(j + 1);
                     currentRow.getCell(4).setValue(data.get(j).getMedicineName());
-                    currentRow.getCell(5).setValue(data.get(j).getInStock());
-                    currentRow.getCell(6).setValue(data.get(j).getImportQuantity());
-                    currentRow.getCell(7).setValue(data.get(j).getExportQuantity());
-                    currentRow.getCell(8).setValue(data.get(j).getCurrentQuantity());
+                    currentRow.getCell(5).setValue(data.get(j).getTotalImport());
+                    currentRow.getCell(6).setValue(data.get(j).getTotalExport());
+                    currentRow.getCell(7).setValue(data.get(j).getAmountStartMonth());
+                    currentRow.getCell(8).setValue(data.get(j).getAmountEndMonth());
                     break;
                 }   
             }
-        try {
-			workbook.save("Report "+ endDate.toEpochSecond(ZoneOffset.UTC) + ".xlsx");
-			System.out.println("success");
-		} catch (IOException e) {
-			throw new ResourceNotFoundException("File can not save");
-		}
+        String fileName = "Report_"+ endDate.toEpochSecond(ZoneOffset.UTC) + EXTENSION;
+		workbook.save(fileName);
+		File file = new File(fileName);
+		return file;
 	}
+	
 
 }
