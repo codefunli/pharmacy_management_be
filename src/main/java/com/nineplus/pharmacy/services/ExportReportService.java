@@ -32,7 +32,8 @@ public class ExportReportService {
 		List<ReportInput> data = medicineSerivice.getReportData(month);
 		
 		try {
-			workbook = ExcelFile.load("src\\main\\resources\\IC-Medical-Invoice-Template-10541.xlsx");
+			//workbook = ExcelFile.load("src\\main\\resources\\IC-Medical-Invoice-Template-10541.xlsx");
+			workbook = ExcelFile.load("src/main/resources/IC-Medical-Invoice-Template-10541.xlsx");
 		} catch (IOException e) {
 			throw new ResourceNotFoundException("File not found");
 		}
