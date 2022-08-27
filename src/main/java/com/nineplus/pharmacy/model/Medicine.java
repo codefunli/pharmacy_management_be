@@ -1,5 +1,6 @@
 package com.nineplus.pharmacy.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -44,8 +45,22 @@ public class Medicine {
 	private String medicineName;
 	// Công ty sản xuất
 	private String medicineCompany;
+	// Đơn giá
+	private BigDecimal cost;
+	// Mã số thuốc
+	private String medicineCode;
+	// Số đăng ký
+	private String registerCode;
+	// Số lô
+	private String lotCode;
 	
-	private String category;
+	private String criteriaManufacture;
+	
+	private String specPackage;
+	
+	private String concentration;
+	
+	private String usageForm;
 	// Xuất xứ
 	private String origin;
 	// Ngày sản xuất
@@ -53,12 +68,12 @@ public class Medicine {
 	private Date expireDate;
 	private long amount;
 	private String unit;
-	private String status;
 	private Date importDate;
 
 	public Medicine() {
 		
 	}
+	
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -69,14 +84,77 @@ public class Medicine {
 	public void setId(long id) {
 		this.id = id;
 	}
+	
+	@Column(name = "medicine_code", nullable = false)
+	public String getMedicineCode() {
+		return this.medicineCode;
+	}
+	
+	public void setMedicineCode(String medicineCode) {
+		this.medicineCode = medicineCode;
+	}
+	
+	@Column(name = "register_code", nullable = false)
+	public String getRegisterCode() {
+		return this.registerCode;
+	}
+	
+	public void setRegisterCode(String registerCode) {
+		this.registerCode = registerCode;
+	}
 
 	@Column(name = "medicine_name", nullable = false)
 	public String getMedicineName() {
-		return medicineName;
+		return this.medicineName;
 	}
 
 	public void setMedicineName(String medicineName) {
 		this.medicineName = medicineName;
+	}
+	
+	@Column(name = "lot_code", nullable = false)
+	public String getLotCode() {
+		return this.lotCode;
+	}
+	
+	public void setLotCode(String lotCode) {
+		this.lotCode = lotCode;
+	}
+	
+	@Column(name = "criteria_manufacture", nullable = false)
+	public String getCriteriaManufacture() {
+		return this.criteriaManufacture;
+	}
+
+	public void setCriteriaManufacture(String criteriaManufacture) {
+		this.criteriaManufacture = criteriaManufacture;
+	}
+	
+	@Column(name = "spec_package", nullable = false)
+	public String getSpecPackage() {
+		return this.specPackage;
+	}
+
+	public void setSpecPackage(String specPackage) {
+		this.specPackage = specPackage;
+	}
+	
+	@Column(name = "concentration", nullable = false)
+	public String getConcentration() {
+		return this.concentration;
+	}
+
+	public void setConcentration(String concentration) {
+		this.concentration = concentration;
+	}
+	
+	@Column(name = "usage_form", nullable = false)
+	public String getUsageForm() {
+		return this.usageForm;
+	}
+
+	public void setUsageForm(String usageForm) {
+		this.usageForm = usageForm;
 	}
 
 	@Column(name = "medicine_company", nullable = false)
@@ -131,26 +209,6 @@ public class Medicine {
 	public void setUnit(String unit) {
 		this.unit = unit;
 	}
-
-	@Column(name = "status", nullable = false)
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	
-	
-
-	@Column(name = "category", nullable = false)
-	public String getCategory() {
-		return category;
-	}
-
-	public void setCategory(String category) {
-		this.category = category;
-	}
 	
 	@Column(name = "import_date", nullable = false)
 	public Date getImportDate() {
@@ -160,12 +218,21 @@ public class Medicine {
 	public void setImportDate(Date importDate) {
 		this.importDate = importDate;
 	}
+	
+	@Column(name = "cost", nullable = false)
+	public BigDecimal getCost() {
+		return this.cost;
+	}
+	
+	public void setCost(BigDecimal cost) {
+		this.cost = cost;
+	}
 
 	@Override
 	public String toString() {
 		return "Medicine [id=" + id + ", medicineName=" + medicineName + ", medicineCompany=" + medicineCompany
 				+ ", origin=" + origin + ", manufactureDate=" + manufactureDate + ", expireDate=" + expireDate
-				+ ", amount=" + amount + ", unit=" + unit + ", status=" + status + "]";
+				+ ", amount=" + amount + ", unit=" + unit + "]";
 	}
 
 	

@@ -80,15 +80,22 @@ public class PharmacyStoreController {
 		Medicine medicine = medicineRepository.findById(medicineId)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + medicineId));
 
+		medicine.setMedicineCode(medicineDetail.getMedicineCode());
 		medicine.setMedicineName(medicineDetail.getMedicineName());
 		medicine.setMedicineCompany(medicineDetail.getMedicineCompany());
-		medicine.setCategory(medicineDetail.getCategory());
+		medicine.setLotCode(medicineDetail.getLotCode());
+		medicine.setRegisterCode(medicineDetail.getRegisterCode());
+		medicine.setCriteriaManufacture(medicineDetail.getCriteriaManufacture());
+		medicine.setSpecPackage(medicineDetail.getSpecPackage());
+		medicine.setCost(medicineDetail.getCost());
+		medicine.setConcentration(medicineDetail.getConcentration());
+		medicine.setUsageForm(medicineDetail.getUsageForm());		
+		medicine.setCost(medicineDetail.getCost());
 		medicine.setOrigin(medicineDetail.getOrigin());
 		medicine.setManufactureDate(medicineDetail.getManufactureDate());
 		medicine.setExpireDate(medicineDetail.getExpireDate());
 		medicine.setAmount(medicineDetail.getAmount());
 		medicine.setUnit(medicineDetail.getUnit());
-		medicine.setStatus(medicineDetail.getStatus());
 
 		final Medicine updatedMedicine = medicineRepository.save(medicine);
 		return ResponseEntity.ok(updatedMedicine);
