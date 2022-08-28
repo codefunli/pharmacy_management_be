@@ -100,7 +100,7 @@ public class ExportReportService {
 				List<MedicineEntity> medicineLst = medicineRepository.getByMedicinCodeLst(data.get(j).getMedicineCode());
 				List<MedicineExportEntity> medicineExportLst = medicineExportRepository.getByMedicinCodeLst(data.get(j).getMedicineCode());
 				currentRow.getCell(0).setValue(j + 1);
-				currentRow.getCell(1).setValue("R00" + (j + 1));
+				currentRow.getCell(1).setValue(medicineLst.get(0).getMedicineCode());
 				currentRow.getCell(2).setValue(data.get(j).getMedicineName());
 				currentRow.getCell(3).setValue(medicineLst.get(0).getUnit());
 				currentRow.getCell(4).setValue(formatter.format(medicineLst.get(0).getExpireDate()));
