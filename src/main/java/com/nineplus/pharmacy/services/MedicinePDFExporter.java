@@ -8,13 +8,13 @@ import javax.servlet.http.HttpServletResponse;
  
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
-import com.nineplus.pharmacy.model.Medicine;
+import com.nineplus.pharmacy.entity.MedicineEntity;
 
 public class MedicinePDFExporter {
 
-	private List<Medicine> listMedicine;
+	private List<MedicineEntity> listMedicine;
     
-    public MedicinePDFExporter(List<Medicine> listMedicine) {
+    public MedicinePDFExporter(List<MedicineEntity> listMedicine) {
         this.listMedicine = listMedicine;
     }
  
@@ -44,7 +44,7 @@ public class MedicinePDFExporter {
     }
      
     private void writeTableData(PdfPTable table) {
-        for (Medicine medicine : listMedicine) {
+        for (MedicineEntity medicine : listMedicine) {
             table.addCell(String.valueOf(medicine.getId()));
             table.addCell(medicine.getMedicineName());
             table.addCell(medicine.getMedicineCompany());

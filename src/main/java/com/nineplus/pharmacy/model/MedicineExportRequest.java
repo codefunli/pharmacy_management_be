@@ -4,7 +4,8 @@ import java.util.Date;
 
 public class MedicineExportRequest {
 
-	private long medicineId;
+	private String medicineCode;
+	private String lotCode;
 	private long amount;
 	private Date exportDate;
 	public MedicineExportRequest() {
@@ -12,11 +13,11 @@ public class MedicineExportRequest {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public long getMedicineId() {
-		return medicineId;
+	public String getMedicineCode() {
+		return medicineCode;
 	}
-	public void setMedicineId(long medicineId) {
-		this.medicineId = medicineId;
+	public void setMedicineCode(String medicineCode) {
+		this.medicineCode = medicineCode;
 	}
 	public long getAmount() {
 		return amount;
@@ -30,6 +31,15 @@ public class MedicineExportRequest {
 	public void setExportDate(Date exportDate) {
 		this.exportDate = exportDate;
 	}
+
+	public String getLotCode() {
+		return lotCode;
+	}
+
+	public void setLotCode(String lotCode) {
+		this.lotCode = lotCode;
+	}
+	
 	
 	
 }

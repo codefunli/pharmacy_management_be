@@ -33,9 +33,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lowagie.text.DocumentException;
+import com.nineplus.pharmacy.entity.MedicineEntity;
+import com.nineplus.pharmacy.entity.MedicineExportEntity;
 import com.nineplus.pharmacy.exception.ResourceNotFoundException;
-import com.nineplus.pharmacy.model.Medicine;
-import com.nineplus.pharmacy.model.MedicineExport;
 import com.nineplus.pharmacy.model.MedicineExportRequest;
 import com.nineplus.pharmacy.repository.MedicineExportRepository;
 import com.nineplus.pharmacy.repository.MedicineRepository;
@@ -56,28 +56,39 @@ public class PharmacyStoreController {
 	private ExportReportService exportReportService;
 
 	@GetMapping("/pharmacies")
-	public List<Medicine> getAllMedicine() {
+	public List<MedicineEntity> getAllMedicine() {
 		return medicineRepository.findAll();
 	}
 
 	@GetMapping("/pharmacies/{id}")
-	public ResponseEntity<Medicine> getEmployeeById(@PathVariable(value = "id") Long medicineId)
+	public ResponseEntity<MedicineEntity> getEmployeeById(@PathVariable(value = "id") Long medicineId)
 			throws ResourceNotFoundException {
-		Medicine medicine = medicineRepository.findById(medicineId)
+		MedicineEntity medicine = medicineRepository.findById(medicineId)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + medicineId));
 		return ResponseEntity.ok().body(medicine);
 	}
 
+	/**
+	 * Import medicine
+	 * @param medicine
+	 * @return
+	 */
 	@PostMapping("/pharmacies")
-	public Medicine createMedicine(@Valid @RequestBody Medicine medicine) {
+	public MedicineEntity createMedicine(@Valid @RequestBody MedicineEntity medicine) {
+//		Medicine medicineStore = medicineRepository.getByMedicinCode(medicine.getMedicineCode());
+//		if (medicine.getMedicineCode().equals(medicineStore.getMedicineCode())) {
+//			long amount = medicine.getAmount() + medicineStore.getAmount();
+//			medicine.setAmount(amount);
+//			return medicineRepository.save(medicine);
+//		}
 		return medicineRepository.save(medicine);
 	}
 
 	@PutMapping("/pharmacies/{id}")
-	public ResponseEntity<Medicine> updateMedicine(@PathVariable(value = "id") Long medicineId,
+	public ResponseEntity<MedicineEntity> updateMedicine(@PathVariable(value = "id") Long medicineId,
 
-			@Valid @RequestBody Medicine medicineDetail) throws ResourceNotFoundException {
-		Medicine medicine = medicineRepository.findById(medicineId)
+			@Valid @RequestBody MedicineEntity medicineDetail) throws ResourceNotFoundException {
+		MedicineEntity medicine = medicineRepository.findById(medicineId)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + medicineId));
 
 		medicine.setMedicineCode(medicineDetail.getMedicineCode());
@@ -97,14 +108,14 @@ public class PharmacyStoreController {
 		medicine.setAmount(medicineDetail.getAmount());
 		medicine.setUnit(medicineDetail.getUnit());
 
-		final Medicine updatedMedicine = medicineRepository.save(medicine);
+		final MedicineEntity updatedMedicine = medicineRepository.save(medicine);
 		return ResponseEntity.ok(updatedMedicine);
 	}
 
 	@DeleteMapping("/pharmacies/{id}")
 	public Map<String, Boolean> deleteMedicine(@PathVariable(value = "id") Long medicineId)
 			throws ResourceNotFoundException {
-		Medicine medicine = medicineRepository.findById(medicineId)
+		MedicineEntity medicine = medicineRepository.findById(medicineId)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not found for this id :: " + medicineId));
 
 		medicineRepository.delete(medicine);
@@ -114,27 +125,30 @@ public class PharmacyStoreController {
 	}
 
 	@GetMapping("/pharmacies/export")
-	public List<MedicineExport> getAllMedicineExport() {
+	public List<MedicineExportEntity> getAllMedicineExport() {
 		return medicineExportRepository.findAll();
 	}
 
 	@PostMapping("/pharmacies/export")
-	public List<MedicineExport> exportMidicineById(@Valid @RequestBody MedicineExportRequest medicineExportRequest)
+	public List<MedicineExportEntity> exportMidicineById(@Valid @RequestBody MedicineExportRequest medicineExportRequest)
 			throws ResourceNotFoundException {
-		long amount = medicineRepository.getById(medicineExportRequest.getMedicineId()).getAmount();
+		long amount = medicineRepository.getByMedicinCode(medicineExportRequest.getMedicineCode(), medicineExportRequest.getLotCode()).getAmount();
 		long diff = amount - medicineExportRequest.getAmount();
 		// Save into Medicine Export DB
-		String medicineName = medicineRepository.getById(medicineExportRequest.getMedicineId()).getMedicineName();
-		String medicineCompany = medicineRepository.getById(medicineExportRequest.getMedicineId()).getMedicineCompany();
-		MedicineExport medicineExport = new MedicineExport();
+		String medicineName = medicineRepository.getByMedicinCode(medicineExportRequest.getMedicineCode(), medicineExportRequest.getLotCode()).getMedicineName();
+		String medicineCompany = medicineRepository.getByMedicinCode(medicineExportRequest.getMedicineCode(), medicineExportRequest.getLotCode()).getMedicineCompany();
+		
+		MedicineExportEntity medicineExport = new MedicineExportEntity();
 		medicineExport.setAmount(medicineExportRequest.getAmount());
 		medicineExport.setMedicineName(medicineName);
+		medicineExport.setMedicineCode(medicineExportRequest.getMedicineCode());
+		medicineExport.setLotCode(medicineExportRequest.getLotCode());
 		medicineExport.setMedicineCompany(medicineCompany);
 		medicineExport.setExportDate(medicineExportRequest.getExportDate());
 		medicineExportRepository.save(medicineExport);
 
 		// Update medicine DB
-		Medicine medicine = medicineRepository.getById(medicineExportRequest.getMedicineId());
+		MedicineEntity medicine = medicineRepository.getByMedicinCode(medicineExportRequest.getMedicineCode(), medicineExportRequest.getLotCode());
 		if (diff > 0) {
 			medicine.setAmount(diff);
 			medicineRepository.save(medicine);
@@ -143,17 +157,6 @@ public class PharmacyStoreController {
 		}
 		return medicineExportRepository.findAll();
 	}
-
-//	@GetMapping("pharmacies/report1")
-//	public ResponseEntity<?> export() {
-//		try {
-//			exportReportService.export();
-//			return new ResponseEntity<>(HttpStatus.OK);
-//		} catch (ResourceNotFoundException e) {
-//			e.getMessage();
-//			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//		}
-//	}
 	
 	@GetMapping("pharmacies/report")
     public void exportToPDF(HttpServletResponse response) throws DocumentException, IOException {
@@ -165,7 +168,7 @@ public class PharmacyStoreController {
         String headerValue = "attachment; filename=users_" + currentDateTime + ".pdf";
         response.setHeader(headerKey, headerValue);
          
-        List<Medicine> listMedicine = medicineRepository.findAll();
+        List<MedicineEntity> listMedicine = medicineRepository.findAll();
          
         MedicinePDFExporter exporter = new MedicinePDFExporter(listMedicine);
         exporter.export(response);
@@ -178,6 +181,81 @@ public class PharmacyStoreController {
     	int monthRes = Integer.parseInt(month);
 			try {
 				file = exportReportService.export(monthRes);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+
+		if (ObjectUtils.isEmpty(file)) {
+			throw new ResourceNotFoundException("Data not found");
+		}
+		String fileName = file.getName();
+		String fileNm = fileName.replace(fileName.substring(fileName.lastIndexOf("_"), fileName.length()), "_thang_" + month);
+        HttpHeaders header = new HttpHeaders();
+        header.add("File-Name", fileNm);
+        header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName );
+        header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        header.add("Response-Header","content-diposition");
+        header.add("Pragma", "no-cache");
+        header.add("Expires", "0");
+
+        Path path = Paths.get(file.getAbsolutePath());
+        ByteArrayResource resource;
+        try {
+			 resource = new ByteArrayResource(Files.readAllBytes(path));
+		} catch (IOException e) {
+			throw new ResourceNotFoundException("Error!");
+		}
+        return ResponseEntity.ok()
+                .headers(header)
+                .contentLength(file.length())
+                .contentType(MediaType.parseMediaType(Files.probeContentType(path)))
+                .body(resource);      
+    }
+	
+	
+	@GetMapping("/pharmacies/download/import/{month}")
+    public ResponseEntity<Resource> downloadImport(@PathVariable(value = "month") String month) throws IOException, ResourceNotFoundException {
+    	File file = null;
+    	int monthRes = Integer.parseInt(month);
+			try {
+				file = exportReportService.reportImport(monthRes);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+
+		if (ObjectUtils.isEmpty(file)) {
+			throw new ResourceNotFoundException("Data not found");
+		}
+		String fileName = file.getName();
+		String fileNm = fileName.replace(fileName.substring(fileName.lastIndexOf("_"), fileName.length()), "_thang_" + month);
+        HttpHeaders header = new HttpHeaders();
+        header.add("File-Name", fileNm);
+        header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName );
+        header.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        header.add("Response-Header","content-diposition");
+        header.add("Pragma", "no-cache");
+        header.add("Expires", "0");
+
+        Path path = Paths.get(file.getAbsolutePath());
+        ByteArrayResource resource;
+        try {
+			 resource = new ByteArrayResource(Files.readAllBytes(path));
+		} catch (IOException e) {
+			throw new ResourceNotFoundException("Error!");
+		}
+        return ResponseEntity.ok()
+                .headers(header)
+                .contentLength(file.length())
+                .contentType(MediaType.parseMediaType(Files.probeContentType(path)))
+                .body(resource);      
+    }
+	
+	@GetMapping("/pharmacies/download/export/{month}")
+    public ResponseEntity<Resource> downloadExport(@PathVariable(value = "month") String month) throws IOException, ResourceNotFoundException {
+    	File file = null;
+    	int monthRes = Integer.parseInt(month);
+			try {
+				file = exportReportService.reportExport(monthRes);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}

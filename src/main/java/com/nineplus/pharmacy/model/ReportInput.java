@@ -1,5 +1,7 @@
 package com.nineplus.pharmacy.model;
 
+import java.util.Date;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +11,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReportInput {
 	private String medicineName;
+	private String medicineCode;
+	private String unit;
+	private Date expireDate;
 	private Long totalImport;
 	private Long totalExport;
 	private Long amountStartMonth;

@@ -1,25 +1,30 @@
-package com.nineplus.pharmacy.model;
+package com.nineplus.pharmacy.entity;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.SqlResultSetMapping;
-import javax.persistence.ConstructorResult;
-import javax.persistence.ColumnResult;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+
+import com.nineplus.pharmacy.model.ReportInput;
+
 import lombok.Data;
 
 @Entity
 @NamedNativeQuery(
     name = "getReportData",
-    query = "SELECT m.medicine_name, m.amount total_import, tx.amount total_export, m.amount amount_start_month, (m.amount - tx.amount) amount_end_month "
-    		+ "FROM (SELECT m1.medicine_name, SUM(m1.amount) amount FROM medicine m1 WHERE MONTH(m1.import_date) = :month GROUP BY m1.medicine_name) as m "
+    query = "SELECT m.medicine_name,m.medicine_code, m.unit, m.expire_date, m.amount total_import, tx.amount total_export, m.amount amount_start_month, (m.amount - tx.amount) amount_end_month "
+    		+ "FROM (SELECT m1.medicine_name,m1.medicine_code,m1.unit, m1.expire_date, SUM(m1.amount) amount FROM medicine m1 WHERE MONTH(m1.import_date) = :month GROUP BY m1.medicine_name) as m "
     		+ "JOIN (SELECT m3.medicine_name, SUM(m3.amount) amount FROM medicine_export m3 WHERE MONTH(m3.export_date) = :month GROUP BY m3.medicine_name) as tx ON m.medicine_name = tx.medicine_name",
     resultSetMapping = "ReportInput"
 )
@@ -29,6 +34,9 @@ import lombok.Data;
         targetClass = ReportInput.class,
         columns = {
             @ColumnResult(name = "medicine_name", type = String.class),
+            @ColumnResult(name = "medicine_code", type = String.class),
+            @ColumnResult(name = "unit", type = String.class),
+            @ColumnResult(name = "expire_date", type = Date.class),
             @ColumnResult(name = "total_import", type = Long.class),
             @ColumnResult(name = "total_export", type = Long.class),
             @ColumnResult(name = "amount_start_month", type = Long.class),
@@ -40,7 +48,7 @@ import lombok.Data;
 @Data
 
 @Table(name = "medicine")
-public class Medicine {
+public class MedicineEntity {
 	private long id;
 	private String medicineName;
 	// Công ty sản xuất
@@ -70,13 +78,22 @@ public class Medicine {
 	private String unit;
 	private Date importDate;
 
-	public Medicine() {
+	public MedicineEntity() {
 		
 	}
 	
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(generator = "sequence-generator")
+    @GenericGenerator(
+      name = "sequence-generator",
+      strategy = "org.hibernate.id.enhanced.SequenceStyleGenerator",
+      parameters = {
+        @Parameter(name = "sequence_name", value = "user_sequence"),
+        @Parameter(name = "initial_value", value = "1"),
+        @Parameter(name = "increment_size", value = "1")
+        }
+    )
 	public long getId() {
 		return id;
 	}

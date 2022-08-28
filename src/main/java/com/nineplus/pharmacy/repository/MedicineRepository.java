@@ -7,12 +7,25 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.nineplus.pharmacy.model.Medicine;
+import com.nineplus.pharmacy.entity.MedicineEntity;
 import com.nineplus.pharmacy.model.ReportInput;
 
 @Repository
-public interface MedicineRepository extends JpaRepository<Medicine, Long>{
-	
+public interface MedicineRepository extends JpaRepository<MedicineEntity, Long>{
+
 	@Query(name = "getReportData", nativeQuery = true)
 	public List<ReportInput> getReportData(@Param("month") int month);
+	
+	@Query(value = "select m from MedicineEntity m where m.medicineName= :name")
+	public MedicineEntity findByMedicineName(String name);
+	
+	@Query(value =  "select * from medicine as m where MONTH(m.import_date) = :month ", nativeQuery = true)
+	public List<MedicineEntity> getImportData(@Param("month") int month);
+
+	@Query(value = "select m from MedicineEntity m where m.medicineCode= :medicineCode and m.lotCode= :lotCode")
+	public MedicineEntity getByMedicinCode(String medicineCode, String lotCode);
+	
+	@Query(value = "select m from MedicineEntity m where m.medicineCode= :medicineCode")
+	public List<MedicineEntity> getByMedicinCodeLst(String medicineCode);
+
 }
