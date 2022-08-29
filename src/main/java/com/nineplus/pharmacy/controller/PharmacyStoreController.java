@@ -43,8 +43,8 @@ import com.nineplus.pharmacy.services.ExportReportService;
 import com.nineplus.pharmacy.services.MedicinePDFExporter;
 
 @RestController
-//@CrossOrigin(origins = "http://localhost:4200")
-@CrossOrigin(origins = "http://119.82.130.211:8081")
+@CrossOrigin(origins = "http://localhost:4200")
+//@CrossOrigin(origins = "http://119.82.130.211:8081")
 @RequestMapping("/api/v1")
 public class PharmacyStoreController {
 	@Autowired
