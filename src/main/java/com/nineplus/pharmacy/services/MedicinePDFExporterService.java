@@ -10,11 +10,11 @@ import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import com.nineplus.pharmacy.entity.MedicineEntity;
 
-public class MedicinePDFExporter {
+public class MedicinePDFExporterService {
 
 	private List<MedicineEntity> listMedicine;
     
-    public MedicinePDFExporter(List<MedicineEntity> listMedicine) {
+    public MedicinePDFExporterService(List<MedicineEntity> listMedicine) {
         this.listMedicine = listMedicine;
     }
  

@@ -40,10 +40,10 @@ import com.nineplus.pharmacy.model.MedicineExportRequest;
 import com.nineplus.pharmacy.repository.MedicineExportRepository;
 import com.nineplus.pharmacy.repository.MedicineRepository;
 import com.nineplus.pharmacy.services.ExportReportService;
-import com.nineplus.pharmacy.services.MedicinePDFExporter;
+import com.nineplus.pharmacy.services.MedicinePDFExporterService;
 
 @RestController
-//@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200")
 //@CrossOrigin(origins = "http://119.82.130.211:8081")
 @RequestMapping("/api/v1")
 public class PharmacyStoreController {
@@ -171,7 +171,7 @@ public class PharmacyStoreController {
          
         List<MedicineEntity> listMedicine = medicineRepository.findAll();
          
-        MedicinePDFExporter exporter = new MedicinePDFExporter(listMedicine);
+        MedicinePDFExporterService exporter = new MedicinePDFExporterService(listMedicine);
         exporter.export(response);
          
     }

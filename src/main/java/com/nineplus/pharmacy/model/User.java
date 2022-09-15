@@ -1,87 +1,89 @@
 package com.nineplus.pharmacy.model;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.*;
- 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
 @Entity
-@Table(name = "users")
+@Table(name = "users", 
+    uniqueConstraints = { 
+      @UniqueConstraint(columnNames = "username"),
+      @UniqueConstraint(columnNames = "email") 
+    })
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-     
-    private String email;
-     
-    private String password;
-     
-    @Column(name = "full_name")
-    private String fullName;
-         
-    private boolean enabled;
-     
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "users_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-            )
-    private Set<Role> roles = new HashSet<>();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-	public User() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+  @NotBlank
+  @Size(max = 20)
+  private String username;
 
-	public Integer getId() {
-		return id;
-	}
+  @NotBlank
+  @Size(max = 50)
+  @Email
+  private String email;
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+  @NotBlank
+  @Size(max = 120)
+  private String password;
 
-	public String getEmail() {
-		return email;
-	}
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(  name = "user_roles", 
+        joinColumns = @JoinColumn(name = "user_id"), 
+        inverseJoinColumns = @JoinColumn(name = "role_id"))
+  private Set<Role> roles = new HashSet<>();
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+  public User() {
+  }
 
-	public String getPassword() {
-		return password;
-	}
+  public User(String username, String email, String password) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+  }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+  public Long getId() {
+    return id;
+  }
 
-	public String getFullName() {
-		return fullName;
-	}
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
+  public String getUsername() {
+    return username;
+  }
 
-	public boolean isEnabled() {
-		return enabled;
-	}
+  public void setUsername(String username) {
+    this.username = username;
+  }
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
+  public String getEmail() {
+    return email;
+  }
 
-	public Set<Role> getRoles() {
-		return roles;
-	}
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-	public void setRoles(Set<Role> roles) {
-		this.roles = roles;
-	}
-    
-    
- 
-    // constructors, getter and setters are not shown for brevity
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public Set<Role> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(Set<Role> roles) {
+    this.roles = roles;
+  }
 }

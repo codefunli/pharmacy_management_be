@@ -44,9 +44,7 @@ import lombok.Data;
         }
     )
 )
-
 @Data
-
 @Table(name = "medicine")
 public class MedicineEntity {
 	private long id;
